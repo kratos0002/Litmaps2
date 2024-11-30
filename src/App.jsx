@@ -1,16 +1,28 @@
 import { useEffect, useState } from "react";
+import { fetchBooks } from "./services/bookService";
 
 function App() {
-  const [message, setMessage] = useState("Loading...");
+  const [books, setBooks] = useState([]);
 
   useEffect(() => {
-    // Simulate fetching data
-    setTimeout(() => setMessage("Welcome to LitMaps!"), 1000);
+    const loadBooks = async () => {
+      const data = await fetchBooks();
+      setBooks(data);
+    };
+
+    loadBooks();
   }, []);
 
   return (
-    <div style={{ textAlign: "center", marginTop: "20%" }}>
-      <h1>{message}</h1>
+    <div style={{ textAlign: "center", marginTop: "20px" }}>
+      <h1>LitMaps: Book List</h1>
+      <ul>
+        {books.map((book) => (
+          <li key={book.id}>
+            {book.title} by {book.author}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
