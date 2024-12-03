@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Map, { Marker, Popup } from 'react-map-gl';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
 import 'mapbox-gl/dist/mapbox-gl.css';
 import supabase from '../supabaseClient'; // Import your Supabase client
 
@@ -16,13 +17,15 @@ const Globe = () => {
 
   const [stories, setStories] = useState([]);
   const [selectedStory, setSelectedStory] = useState(null);
+    const navigate = useNavigate(); // Hook for navigation
+
 
   // Fetch story data
   useEffect(() => {
     const fetchStories = async () => {
       const { data, error } = await supabase
         .from('stories') // Name of your Supabase table
-        .select('storyid, title, latitude, longitude, shortdescription, originaltexturl, translatedtexturl');
+        .select('storyid, title, latitude, longitude, shortdescription, originaltexturl, translatedtexturl, author');
 
       if (error) {
         console.error('Error fetching stories:', error);
@@ -50,7 +53,7 @@ const Globe = () => {
       >
         {stories.map((story) => (
           <Marker
-            key={story.id}
+            key={story.storyid}
             latitude={story.latitude}
             longitude={story.longitude}
           >
@@ -63,24 +66,33 @@ const Globe = () => {
           </Marker>
         ))}
 
-        {selectedStory && (
-          <Popup
-            latitude={selectedStory.latitude}
-            longitude={selectedStory.longitude}
-            onClose={() => setSelectedStory(null)}
-            closeOnClick={false}
-          >
-            <h3>{selectedStory.title}</h3>
-            <p>{selectedStory.shortdescription}</p>
-            <a href={selectedStory.originalTextURL} target="_blank" rel="noreferrer">
-              Original Story
-            </a>
-            <br />
-            <a href={selectedStory.translatedTextURL} target="_blank" rel="noreferrer">
-              Translated Story
-            </a>
-          </Popup>
-        )}
+{selectedStory && (
+  <Popup
+    latitude={selectedStory.latitude}
+    longitude={selectedStory.longitude}
+    onClose={() => setSelectedStory(null)}
+    closeOnClick={false}
+  >
+    <h3>{selectedStory.title}</h3>
+    <p><strong>Author:</strong> {selectedStory.author || 'Unknown'}</p>
+    <p>{selectedStory.shortdescription || 'No description available.'}</p>
+    <div>
+      <button
+        onClick={() => navigate(`/story/${selectedStory.storyid}`)}
+        style={{
+          background: 'none',
+          border: 'none',
+          color: 'blue',
+          textDecoration: 'underline',
+          cursor: 'pointer',
+        }}
+      >
+        Read the Full Story
+      </button>
+    </div>
+  </Popup>
+)}
+
       </Map>
     </div>
   );
